@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 dotenv.config();
 
 const app = express();
@@ -33,7 +33,16 @@ async function run() {
     const bookingCollection = db.collection("bookings");
     const paymentCollection = db.collection("payments");
 
-    //  Create POST API
+    //  Create Get API for organization
+    app.get("/api/organizations/:email", async (req, res) => {
+      const { email } = req.params;
+      const result = await organizationCollection.findOne({
+        organizerEmail: email,
+      });
+      res.send(result);
+    });
+
+    //  Create POST API for organization
     app.post("/api/organizations", async (req, res) => {
       const { organizationName, logo, website, description, organizerEmail } =
         req.body;
@@ -49,6 +58,47 @@ async function run() {
       };
 
       const result = await organizationCollection.insertOne(addData);
+      console.log(result);
+      res.json(result);
+    });
+
+    //  Create Patch API for organization data update
+    app.patch("/api/organizations/:id", async (req, res) => {
+      //   const { id } = req.params.id;
+      const id = req.params.id;
+      const { organizationName, logo, website, description, organizerEmail } =
+        req.body;
+
+      const updateData = {
+        organizationName,
+        logo,
+        website,
+        description,
+        organizerEmail,
+        // createdAt: new Date(),
+        updatedAt: new Date(),
+
+        status: "active",
+      };
+
+      const org = await organizationCollection.findOne({
+        _id: new ObjectId(id),
+      });
+      console.log(org, "findOne");
+
+      //   ***
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid Organization ID" });
+      }
+      //   ***
+      const result = await organizationCollection.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: updateData,
+        },
+      );
+
+      console.log(result);
       res.json(result);
     });
 
