@@ -105,17 +105,6 @@ async function run() {
     // ****** events ar sob api***
 
     //  Create Get API for manage events
-    // app.get("/api/events/:email", async (req, res) => {
-    //   const { email } = req.params;
-    //   console.log(email);
-    //   const result = await eventCollection
-    //     .findOne({
-    //       organizationEmail: email,
-    //     })
-    //     .toArray();
-    //   res.send(result);
-    // });
-
     app.get("/api/events/:email", async (req, res) => {
       try {
         const { email } = req.params;
@@ -144,6 +133,32 @@ async function run() {
       const data = req.body;
 
       const result = await eventCollection.insertOne({ ...data });
+      console.log(result);
+      res.json(result);
+    });
+
+    //  Create Patch API for events data update
+    app.patch("/api/events/:id", async (req, res) => {
+      //   const { id } = req.params.id;
+      const id = req.params.id;
+      const updateData = req.body;
+
+      //   const org = await eventCollection.findOne({
+      //     _id: new ObjectId(id),
+      //   });
+      //   console.log(org, "findOne");
+
+      //   ***
+      //   if (!ObjectId.isValid(id)) {
+      // return res.status(400).json({ message: "Invalid Organization ID" });}
+      //   ***
+      const result = await eventCollection.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: updateData,
+        },
+      );
+
       console.log(result);
       res.json(result);
     });
