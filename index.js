@@ -142,16 +142,6 @@ async function run() {
       //   const { id } = req.params.id;
       const id = req.params.id;
       const updateData = req.body;
-
-      //   const org = await eventCollection.findOne({
-      //     _id: new ObjectId(id),
-      //   });
-      //   console.log(org, "findOne");
-
-      //   ***
-      //   if (!ObjectId.isValid(id)) {
-      // return res.status(400).json({ message: "Invalid Organization ID" });}
-      //   ***
       const result = await eventCollection.updateOne(
         { _id: new ObjectId(id) },
         {
@@ -161,6 +151,14 @@ async function run() {
 
       console.log(result);
       res.json(result);
+    });
+
+    //  Create delete API for delete event
+    app.delete("/api/events/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await eventCollection.deleteOne({ _id: new ObjectId(id) });
+
+      res.send(result);
     });
 
     // ******* pinged ******
