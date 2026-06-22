@@ -102,6 +102,52 @@ async function run() {
       res.json(result);
     });
 
+    // ****** events ar sob api***
+
+    //  Create Get API for manage events
+    // app.get("/api/events/:email", async (req, res) => {
+    //   const { email } = req.params;
+    //   console.log(email);
+    //   const result = await eventCollection
+    //     .findOne({
+    //       organizationEmail: email,
+    //     })
+    //     .toArray();
+    //   res.send(result);
+    // });
+
+    app.get("/api/events/:email", async (req, res) => {
+      try {
+        const { email } = req.params;
+        console.log("Fetching events for:", email);
+
+        const result = await eventCollection
+          .find({ organizationEmail: email })
+          .toArray();
+
+        if (!result || result.length === 0) {
+          return res.send([]);
+        }
+
+        res.send(result);
+      } catch (error) {
+        console.error("Backend Error:", error);
+
+        res
+          .status(500)
+          .send({ error: "Internal Server Error", message: error.message });
+      }
+    });
+
+    //  Create POST API for add events
+    app.post("/api/events", async (req, res) => {
+      const data = req.body;
+
+      const result = await eventCollection.insertOne({ ...data });
+      console.log(result);
+      res.json(result);
+    });
+
     // ******* pinged ******
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
