@@ -106,9 +106,30 @@ async function run() {
     // ****** events ar sob api***
 
     // ! **********
-    // GET API  for all events for "browse events" page
+    // GET API  for all events for "browse events" page || search & Filter
     app.get("/api/events", async (req, res) => {
-      const cursor = eventCollection.find();
+      // for search
+      const search = req.query.search;
+      const category = req.query.category;
+      const location = req.query.location;
+      const query = {};
+      if (search) {
+        query.title = {
+          $regex: search,
+          $options: "i",
+        };
+      }
+
+      if (category) {
+        // query.category = category;
+        // console.log(category, category.split(","));
+        query.category = { $in: category.split(",") };
+      }
+      if (location) {
+        query.location = location;
+      }
+
+      const cursor = eventCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
