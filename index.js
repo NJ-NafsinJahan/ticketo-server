@@ -30,6 +30,7 @@ async function run() {
     const db = client.db("ticketoDB");
     const organizationCollection = db.collection("organizations");
     const eventCollection = db.collection("events");
+    const usersCollection = db.collection("user");
     const bookingCollection = db.collection("bookings");
     const paymentCollection = db.collection("payments");
 
@@ -149,8 +150,24 @@ async function run() {
     //  Create POST API for add events
     app.post("/api/events", async (req, res) => {
       const data = req.body;
+      //   console.log(data);
+      const organizer = await usersCollection.findOne({
+        email: data?.organizationEmail,
+      });
+      //   console.log(organizer);
+      const organizerEventsCounts = await eventCollection.countDocuments({
+        organizationEmail: data?.organizationEmail,
+      });
+      //   console.log(organizerEventsCounts, "organizerEvents count");
+      if (!organizer?.isPremium && organizerEventsCounts >= 3) {
+        return res.status(401).send({ message: "your free limit in over" });
+      }
+      //   return;
 
-      const result = await eventCollection.insertOne({ ...data });
+      const result = await eventCollection.insertOne({
+        ...data,
+        status: "Pending",
+      });
       console.log(result);
       res.json(result);
     });
