@@ -104,6 +104,24 @@ async function run() {
 
     // ****** events ar sob api***
 
+    // ! **********
+    // GET API  for all events for "browse events" page
+    app.get("/api/events", async (req, res) => {
+      const cursor = eventCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // GET API  for all events for " events details" page
+    app.get("/api/single-events/:id", async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) };
+      const result = await eventCollection.findOne(query);
+      res.send(result);
+    });
+
+    // ! **********
+
     //  Create Get API for manage events
     app.get("/api/events/:email", async (req, res) => {
       try {
