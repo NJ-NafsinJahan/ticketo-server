@@ -168,6 +168,54 @@ async function run() {
       }
     });
 
+    // Post api for booking &  success payment   for events/attendee
+    app.post("/api/events/booking", async (req, res) => {
+      const {
+        amount,
+        eventId,
+        eventTitle,
+        quantity,
+        email,
+        paymentType,
+        transactionId,
+        paymentStatus,
+      } = req.body;
+      console.log(req.body, "booking success payment");
+      const bookingData = {
+        eventId,
+        eventTitle,
+        attendeeEmail: email,
+        quantity,
+        amount,
+        transactionId,
+        paymentStatus,
+        bookingDate: new Date(),
+      };
+      const bookingRes = await bookingCollection.insertOne(bookingData);
+
+      // capacity 1 , 1 kre reduce kra
+      await eventCollection.updateOne(
+        { _id: new ObjectId(eventId) },
+        {
+          $inc: {
+            capacity: -quantity,
+          },
+        },
+      );
+
+      // **** for payment data
+
+      const paymentData = {
+        userEmail: email,
+        amount,
+        transactionId,
+        paymentStatus,
+        paymentType,
+      };
+      await paymentCollection.insertOne(paymentData);
+      res.send(bookingRes);
+    });
+
     //  Create POST API for add events
     app.post("/api/events", async (req, res) => {
       const data = req.body;
@@ -214,6 +262,22 @@ async function run() {
       const { id } = req.params;
       const result = await eventCollection.deleteOne({ _id: new ObjectId(id) });
 
+      res.send(result);
+    });
+
+    // ****** users ar sob api***
+
+    //  PATCH api for users upgrade-premium
+    app.patch("/api/users/upgrade-premium/:email", async (req, res) => {
+      const { email } = req.params;
+      const result = await usersCollection.updateOne(
+        { email },
+        {
+          $set: {
+            isPremium: true,
+          },
+        },
+      );
       res.send(result);
     });
 
