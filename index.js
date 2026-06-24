@@ -168,6 +168,17 @@ async function run() {
       }
     });
 
+    // GET API for attendee ticket booking page
+    app.get("/api/events/booking/:email", async (req, res) => {
+      const { email } = req.params;
+
+      const result = await bookingCollection
+        .find({ attendeeEmail: email })
+        .toArray();
+
+      res.send(result);
+    });
+
     // Post api for booking &  success payment   for events/attendee
     app.post("/api/events/booking", async (req, res) => {
       const {
@@ -181,6 +192,7 @@ async function run() {
         paymentStatus,
       } = req.body;
       console.log(req.body, "booking success payment");
+
       const bookingData = {
         eventId,
         eventTitle,
@@ -191,6 +203,13 @@ async function run() {
         paymentStatus,
         bookingDate: new Date(),
       };
+
+      //   bar bar booking payment na hoy tai
+      const isBookingExist = await bookingCollection.findOne({ transactionId });
+      if (isBookingExist) {
+        return res.status(200).send({ message: "Already paid" });
+      }
+
       const bookingRes = await bookingCollection.insertOne(bookingData);
 
       // capacity 1 , 1 kre reduce kra
