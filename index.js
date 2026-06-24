@@ -230,6 +230,7 @@ async function run() {
         transactionId,
         paymentStatus,
         paymentType,
+        paidAt: new Date(),
       };
       await paymentCollection.insertOne(paymentData);
       res.send(bookingRes);
@@ -297,6 +298,29 @@ async function run() {
           },
         },
       );
+
+      const paymentData = {
+        userEmail: email,
+        amount,
+        transactionId,
+        paymentStatus,
+        paymentType,
+        paidAt: new Date(),
+      };
+
+      await paymentCollection.insertOne();
+
+      res.send(result);
+    });
+
+    // GET API for attendee payment overview page
+    app.get("/api/payment/:email", async (req, res) => {
+      const { email } = req.params;
+      //   console.log(email);
+
+      const result = await paymentCollection
+        .find({ userEmail: email })
+        .toArray();
       res.send(result);
     });
 
